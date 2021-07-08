@@ -45,6 +45,12 @@ int main() {
     event -= f_tok;
     event(5);
 
+    cout << "Adding f and h in that order, but will be invoked in reverse order as h, f\n";
+    f_tok = f + event;
+    h_tok = h + event;
+
+    event(5);
+
     cout << "\nOnce more, with lambdas\n";
     event += [](int n) { cout << "[](" << n << ")\n"; };
     event += [=](int n) { cout << "[=](" << n << ")\n"; };

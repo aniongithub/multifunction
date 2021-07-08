@@ -69,6 +69,9 @@ public:
     // from within this class. The outside world can only store them.
     class handle {
         friend class multifunction;
+        
+        template <typename F>
+        friend handle operator +(F listener, multifunction<R(Args...)> function);
 
         handle(std::size_t id) noexcept : id(static_cast<unsigned>(id)) { }
 
@@ -82,6 +85,20 @@ public:
     multifunction& operator =(multifunction const&) = default;
     multifunction& operator =(multifunction&&) = default;
     ~multifunction() = default;
+
+    template <typename F>
+    friend handle operator +(multifunction<R(Args...)> function, F listener)
+    {
+        return function += listener;
+    }
+
+    template <typename F>
+    friend handle operator +(F listener, multifunction<R(Args...)> function)
+    {
+        function.listeners.insert(function.listeners.begin(), listener);
+        function.handle_lookup.insert(function.handle_lookup.begin(), 0);
+        return multifunction::handle{ function.handle_lookup[0] };
+    }
 
     template <typename F>
     handle operator +=(F listener) {
@@ -104,6 +121,12 @@ public:
 
         listeners.erase(listeners.begin() + i);
         handle_lookup[handle.id] = NIL;
+    }
+
+    friend multifunction<R, Args...> operator -(multifunction<R(Args...)> function, handle h)
+    {
+        function -= h;
+        return function;
     }
 
     template <typename... Ts>
